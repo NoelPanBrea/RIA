@@ -9,6 +9,7 @@ powershell -ExecutionPolicy Bypass -File terminal.ps1
 
 ### Ejecutar los módulos principales:
 ros2 run robobo_ros2 robobo_container --ros-args -p ip:=host.docker.internal
+ros2 run robobo_ros2 robobo_container --ros-args -p ip:=host.docker.internal -p modules:="['sim']"
 ros2 run robobo_ros2 robobo_container --ros-args -p ip:=host.docker.internal -p modules:="['emotion', 'blob']"
 
 
