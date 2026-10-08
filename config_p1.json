@@ -1,0 +1,89 @@
+{
+  "ns_robot": "/robobo/robot_0",
+  "ns_guia": "/robobo/robot_1",
+  "color_blob": "green",
+  "blob_x_max": 100.0,
+  "blob_y_max": 100.0,
+  "blob_size_max": 3000.0,
+  "blob_size_min": 20.0,
+  "blob_y_validas": [
+    0.0,
+    100.0
+  ],
+  "ir_saturacion": 1000.0,
+  "usar_ir": true,
+  "usar_delta": true,
+  "escala_delta": 5.0,
+  "sin_ver_max": 25,
+  "v_max": 0.25,
+  "v_min": -0.08,
+  "w_max": 1.0,
+  "espera_accion_s": 0.1,
+  "espera_max_s": 3.0,
+  "pasos_max": 300,
+  "banda_sep": [
+    0.25,
+    0.5
+  ],
+  "sep_perdido": 1.0,
+  "d_colision": 0.2,
+  "ancho_carril": 0.22,
+  "ancho_robot": 0.16,
+  "calzada_lat": [
+    -0.11,
+    0.33
+  ],
+  "linea_central": "linea_central.json",
+  "modo_recompensa": "sensores",
+  "tam_banda": [
+    0.35,
+    0.6
+  ],
+  "ir_choque": 0.85,
+  "sin_ver_fin": 15,
+  "pasos_gracia": 50,
+  "guia_pose_disponible": false,
+  "recompensa": {
+    "sep_banda": 1.0,
+    "sep_dist": 2.0,
+    "carril": 1.0,
+    "sin_vista": 0.2,
+    "giro": 0.05,
+    "cambio_accion": 0.05,
+    "terminal": 50.0,
+    "tam_dist": 4.0,
+    "centrado": 0.5
+  },
+  "aleatorizar_inicio": true,
+  "inicio_sep": [
+    0.3,
+    0.7
+  ],
+  "inicio_lat_sigma": 0.02,
+  "inicio_yaw_sigma_deg": 10.0,
+  "aleatorizar_guia": false,
+  "max_pasos_sin_blob_real": 25,
+  "_calibracion_observada": {
+    "fuente": "calibracion_sensor.csv (seguidor y guía parados, ~100 s)",
+    "periodo_blobs_s": 0.2,
+    "x": 50.0,
+    "y": 96.0,
+    "size": 55.0,
+    "ir_front": 47,
+    "desviacion_tipica": 0.0,
+    "conclusiones": [
+      "Los blobs llegan a 5 Hz (periodo 0.2 s): confirma espera_accion_s=0.1 y dt~0.2 s.",
+      "Sin ruido en el simulador (std=0 en x, y, size e IR): no hace falta suavizar.",
+      "x=50 con rango 0-100: pelota centrada, coherente con blob_x_max=100.",
+      "y=96: la pelota queda en la parte baja de la imagen; blob_y_validas debe incluirlo (ya lo hace).",
+      "size=55 > blob_size_min=20: se detecta."
+    ],
+    "pendiente": [
+      "blob_size_max: hace falta size con el guía pegado (colisión).",
+      "tam_banda: hace falta size a 0.50 m y a 0.25 m de separación.",
+      "ir_choque / ir_saturacion: hace falta el IR con el guía pegado.",
+      "v_max / v_min: medir la velocidad del guía (C1..C4) y del seguidor.",
+      "Rectas frente a curvas e inclinación de la cámara: repetir con el seguidor moviéndose."
+    ]
+  }
+}
