@@ -50,10 +50,10 @@ CALIBRADO = False   # poner a True cuando esten medidos
 
 BLOB_X_MAX = 100.0  # la x del blob va de 0 a 100
 
-# size del blob a 0.45 m, a 0.20 m y casi tocando al guia
-SIZE_LEJOS = 400.0
-SIZE_CERCA = 2000.0
-SIZE_SAT = 5500.0
+# size del blob
+SIZE_LEJOS = 100
+SIZE_CERCA = 250.0
+SIZE_MUY_CERCA = 300.0
 
 # Orden de los ocho valores del array publicado en <NS_BASE>/ir:
 #   0 FrontLL  1 FrontL  2 FrontC  3 FrontR  4 FrontRR
@@ -62,10 +62,10 @@ IR_FRONTALES = [0, 1, 2, 3, 4]
 IR_SATURACION = 1000.0
 P_CHOQUE = 0.85
 
-V_MAX = 0.15   # m/s, tiene que ser mas que el guia
-W_MAX = 1.0    # rad/s
+V_MAX = 0.20   # velocidad linea recta
+W_MAX = 0.5    # Giro
 
-TILT_ANGULO = 90.0      # grados
+TILT_ANGULO = 110.0      # grados
 TILT_VELOCIDAD = 15.0
 ESPERA_INICIO_S = 2.0   # espera al empezar cada episodio
 
@@ -73,16 +73,19 @@ ESPERA_INICIO_S = 2.0   # espera al empezar cada episodio
 # ---------- Resto de constantes ----------
 
 # uso la raiz del size porque va con 1/distancia
-T_LEJOS = math.sqrt(SIZE_LEJOS / SIZE_SAT)
-T_CERCA = math.sqrt(SIZE_CERCA / SIZE_SAT)
+T_CERCA = 0.12 / 0.20
+T_LEJOS = T_CERCA * math.sqrt(SIZE_LEJOS / SIZE_CERCA)
 T_MUY_LEJOS = T_LEJOS * 0.45 / 0.90   # equivale a 0.90 m
+T_MUY_CERCA = T_CERCA * math.sqrt(SIZE_MUY_CERCA / SIZE_CERCA)
 
 PASO_S = 0.15        # espera despues de mandar la accion
 ESPERA_MAX_S = 3.0
 T_PERDIDO_S = 3.0    # segundos sin ver la pelota para darlo por perdido
 
 # pesos de la recompensa
-K_SEP = 1.0
+CASTIGO_LEJOS = 0.5
+
+K_SEP = 1.20
 K_CENTRO = 0.5
 K_NO_VER = 0.5
 K_GIRO = 0.05
@@ -113,7 +116,7 @@ def x_normalizada(x):
 
 
 def tam_normalizado(size):
-    return float(min(math.sqrt(max(size, 0.0) / SIZE_SAT), 1.0))
+    return float(min(T_CERCA * math.sqrt(max(size, 0.0) / SIZE_CERCA), 1.0))
 
 
 def proximidad_ir(ir):
@@ -354,8 +357,9 @@ class RoboboSeguirEnv(gym.Env):
             if tam < T_LEJOS:
                 r_sep = max((tam - T_MUY_LEJOS) / (T_LEJOS - T_MUY_LEJOS),
                             0.0)
+                r_sep = r_sep * (1.0 + CASTIGO_LEJOS) - CASTIGO_LEJOS
             elif tam > T_CERCA:
-                r_sep = max((1.0 - tam) / (1.0 - T_CERCA), 0.0)
+                r_sep = max((T_MUY_CERCA - tam) / (T_MUY_CERCA - T_CERCA), 0.0)
             else:
                 r_sep = 1.0
             # mas premio cuanto mas centrada
@@ -483,6 +487,7 @@ def calibrar():
 
     activar_solo_verde(nodo)
     mover_tilt(nodo)
+    time.sleep(2.0)
     
     print('{:>8s} {:>8s} {:>9s} {:>8s} {:>8s} {:>8s}'
           .format('x', 'y', 'size', 'x_norm', 'tam', 'ir_max'))

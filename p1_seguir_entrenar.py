@@ -21,7 +21,6 @@ from p1_seguir_env import RoboboSeguirEnv, calibrar
 RUTA_MODELO = 'p1_seguir_modelo'
 RUTA_LOGS = 'p1_seguir_logs'
 
-
 # =====================================================================
 # Hiperparámetros
 # =====================================================================
@@ -278,7 +277,7 @@ def main():
     p.add_argument('--pasos', type=int, default=10_000,
                    help='pasos totales de entrenamiento')
     p.add_argument('--episodios', type=int, default=5)
-    p.add_argument('--pasos-max', type=int, default=200,
+    p.add_argument('--pasos-max', type=int, default=400,
                    help='longitud máxima de un episodio')
     p.add_argument('--sin-simulador', action='store_true',
                    help='no usar el modulo sim; el robot se repone a mano')
