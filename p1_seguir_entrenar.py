@@ -16,10 +16,10 @@ import time
 import numpy as np
 
 from p1_seguir_env import RoboboSeguirEnv, calibrar
+from p1_modelwrapper import RegistroPasos
 
-
-RUTA_MODELO = 'p1_seguir_modelo'
-RUTA_LOGS = 'p1_seguir_logs'
+RUTA_MODELO = 'modelo\\p1_seguir_modelo'
+RUTA_LOGS = 'p1_seguir_logs_test'
 
 # =====================================================================
 # Hiperparámetros
@@ -121,6 +121,7 @@ def modo_aleatorio(args):
 
 def modo_entrenar(args):
     env = crear_env(args)
+    env = RegistroPasos(env, "p1_seguir_logs_test/pasos.csv")
     try:
         from stable_baselines3.common.monitor import Monitor
 
@@ -143,7 +144,7 @@ def modo_entrenar(args):
         except KeyboardInterrupt:
             print('\nEntrenamiento interrumpido por el usuario.')
 
-        ruta = RUTA_MODELO + '_' + args.algoritmo
+        ruta = args.ruta_modelo + '_' + args.algoritmo
         modelo.save(ruta)
         print('\nModelo guardado en {}.zip'.format(ruta))
         print('Registro en {}.monitor.csv'.format(registro))
@@ -155,7 +156,7 @@ def modo_entrenar(args):
 def modo_evaluar(args):
     env = crear_env(args)
     try:
-        ruta = RUTA_MODELO + '_' + args.algoritmo
+        ruta = args.ruta_modelo + '_' + args.algoritmo
         if not os.path.exists(ruta + '.zip'):
             raise SystemExit(
                 'No existe {}.zip. Hay que entrenar primero.'.format(ruta))
@@ -283,6 +284,7 @@ def main():
                    help='no usar el modulo sim; el robot se repone a mano')
     p.add_argument('--detalle', action='store_true',
                    help='imprime una línea por paso')
+    p.add_argument('--ruta-modelo', default=RUTA_MODELO)
 
     args = p.parse_args()
 
