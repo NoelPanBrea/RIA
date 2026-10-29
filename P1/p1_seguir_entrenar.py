@@ -15,8 +15,8 @@ import time
 
 import numpy as np
 
-from p1_seguir_env import RoboboSeguirEnv, calibrar
-from p1_modelwrapper import RegistroPasos
+from p2_seguir_env import RoboboSeguirEnv, calibrar
+from p2_modelwrapper import RegistroPasos
 
 RUTA_MODELO = 'modelo\\p1_seguir_modelo'
 RUTA_LOGS = 'p1_seguir_logs_test'
