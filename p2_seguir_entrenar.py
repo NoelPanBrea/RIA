@@ -2,24 +2,26 @@
 """
 Practica 1 - Entrenar y probar el seguimiento del guia.
 
-    python3 p1_seguir_entrenar.py --calibrar
-    python3 p1_seguir_entrenar.py --comprobar
-    python3 p1_seguir_entrenar.py --aleatorio --episodios 5
-    python3 p1_seguir_entrenar.py --entrenar --algoritmo sac --pasos 10000
-    python3 p1_seguir_entrenar.py --evaluar --episodios 5
+    python3 p2_seguir_entrenar.py --calibrar
+    python3 p2_seguir_entrenar.py --comprobar
+    python3 p2_seguir_entrenar.py --aleatorio --episodios 5
+    python3 p2_seguir_entrenar.py --entrenar --algoritmo sac --pasos 10000
+    python3 p2_seguir_entrenar.py --evaluar --episodios 5
 """
 
 import argparse
 import os
 import time
+import neat
 
 import numpy as np
 
 from p2_seguir_env import RoboboSeguirEnv, calibrar
 from p2_modelwrapper import RegistroPasos
 
-RUTA_MODELO = 'modelo\\p1_seguir_modelo'
-RUTA_LOGS = 'p1_seguir_logs_test'
+RUTA_MODELO = 'modelo\\p2_seguir_modelo'
+RUTA_LOGS = 'p2_seguir_logs_test'
+RUTA_CONFIG = "config.txt"
 
 # =====================================================================
 # Hiperparámetros
@@ -30,46 +32,19 @@ RUTA_LOGS = 'p1_seguir_logs_test'
 # cada paso cuesta tiempo real, de modo que hay que ajustar sobre todo
 # el tamaño de los lotes de recogida de datos.
 
-HIPER_SAC = dict(
-    learning_rate=3e-4,
-    buffer_size=50_000,
-    # Pasos que se recogen con acciones aleatorias antes de empezar a
-    # entrenar. Llenan el búfer de repetición con algo de variedad.
-    learning_starts=500,
-    batch_size=256,
-    tau=0.005,
-    gamma=0.99,
-    # Una actualización de la red por cada paso del entorno. Es asumible
-    # porque el paso del entorno es mucho más lento que la actualización.
-    train_freq=1,
-    gradient_steps=1,
-)
+def construir_algoritmo():
+    config = neat.config.Config(neat.DefaultGenome,
+                                neat.DefaultReproduction,
+                                neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation,
+                                RUTA_CONFIG)
 
-HIPER_PPO = dict(
-    learning_rate=3e-4,
-    # PPO recoge n_steps transiciones antes de cada actualización. El
-    # valor por defecto (2048) supondría diez minutos de simulación entre
-    # actualización y actualización.
-    n_steps=512,
-    batch_size=64,
-    n_epochs=10,
-    gamma=0.99,
-    gae_lambda=0.95,
-    clip_range=0.2,
-    ent_coef=0.0,
-)
+    population = neat.Population(config)
+    population.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    population.add_reporter(stats)
 
-
-def construir_algoritmo(nombre, env):
-    from stable_baselines3 import PPO, SAC
-
-    if nombre == 'sac':
-        return SAC('MlpPolicy', env, verbose=1,
-                   tensorboard_log=RUTA_LOGS, **HIPER_SAC)
-    if nombre == 'ppo':
-        return PPO('MlpPolicy', env, verbose=1,
-                   tensorboard_log=RUTA_LOGS, **HIPER_PPO)
-    raise ValueError('Algoritmo desconocido: ' + nombre)
+    return population
 
 
 def cargar_algoritmo(nombre, ruta, env):
@@ -77,7 +52,6 @@ def cargar_algoritmo(nombre, ruta, env):
 
     clase = SAC if nombre == 'sac' else PPO
     return clase.load(ruta, env=env)
-
 
 # =====================================================================
 # Modos de ejecución
@@ -121,40 +95,31 @@ def modo_aleatorio(args):
 
 def modo_entrenar(args):
     env = crear_env(args)
-    env = RegistroPasos(env, "p1_seguir_logs_test/pasos.csv")
+    env = RegistroPasos(env, "p2_seguir_logs_test/pasos.csv")
     try:
-        from stable_baselines3.common.monitor import Monitor
-
-        # el Monitor guarda un csv por episodio para las curvas
-        os.makedirs(RUTA_LOGS, exist_ok=True)
-        registro = os.path.join(
-            RUTA_LOGS, '{}_{}'.format(args.algoritmo,
-                                      time.strftime('%Y%m%d_%H%M%S')))
-        env = Monitor(env, registro, info_keywords=('choque', 'perdido'))
-
-        modelo = construir_algoritmo(args.algoritmo, env)
-
-        print('\nEntrenando {} durante {} pasos.'
-              .format(args.algoritmo.upper(), args.pasos))
-        print('Se puede interrumpir con Ctrl-C: el modelo se guarda igual.\n')
-
-        t0 = time.time()
-        try:
-            modelo.learn(total_timesteps=args.pasos, progress_bar=False)
-        except KeyboardInterrupt:
-            print('\nEntrenamiento interrumpido por el usuario.')
-
-        ruta = args.ruta_modelo + '_' + args.algoritmo
-        modelo.save(ruta)
-        print('\nModelo guardado en {}.zip'.format(ruta))
-        print('Registro en {}.monitor.csv'.format(registro))
-        print('Tiempo empleado: {:.1f} min'.format((time.time() - t0) / 60.0))
+        pop = construir_algoritmo()
+        winner = pop.run(evaluar_genomas, args.episodios)
     finally:
         env.close()
 
 
 def modo_evaluar(args):
     env = crear_env(args)
+
+    def evaluar_genomas(genomes, config):
+
+        nets = []
+
+        for i, g in genomes:
+            net = neat.nn.FeedForwardNetwork.create(g, config)
+            nets.append(net)
+            g.fitness = 0
+            terminado, truncado = False, False
+            _, _, terminado, truncado, info = env.step
+            while not (terminado or truncado):
+                accion = net.activate(info[""])
+    
+
     try:
         ruta = args.ruta_modelo + '_' + args.algoritmo
         if not os.path.exists(ruta + '.zip'):
