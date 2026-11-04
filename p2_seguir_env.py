@@ -262,7 +262,8 @@ class RoboboSeguirEnv(gym.Env):
         self.ultima_accion = np.array([-1.0, 0.0], dtype=np.float32)
         self._x_ult = 0.0
         self._tam_ult = 0.0
-        self._t_visto = time.time()
+        self._t_visto = time.time()     # ultima vez visto
+        self._t_ok = time.time()        # ultima vez visto a distancia razonable
 
         # esperar a que llegue algo antes de empezar
         self._esperar_blob_nuevo(inicial=True)
@@ -349,6 +350,8 @@ class RoboboSeguirEnv(gym.Env):
             self._x_ult = x_normalizada(self._blob[0])
             self._tam_ult = tam_normalizado(self._blob[2])
             self._t_visto = ahora
+            if self._tam_ult >= T_MUY_LEJOS:
+                self._t_ok = ahora 
         return visible, ahora - self._t_visto, proximidad_ir(self._ir)
 
     def _observacion(self, visible, sin_ver, prox):
@@ -413,7 +416,8 @@ class RoboboSeguirEnv(gym.Env):
         self._vaciar_cola()
         self._esperar_blob_nuevo()
 
-        self._t_visto = time.time()
+        self._t_visto = time.time()      # ultima vez visto
+        self._t_ok = time.time()         # ultima vez visto a distancia razonable
         visible, sin_ver, prox = self._percibir()
         return self._observacion(visible, sin_ver, prox), {}
 
@@ -434,7 +438,7 @@ class RoboboSeguirEnv(gym.Env):
         visible, sin_ver, prox = self._percibir()
 
         choque = prox >= P_CHOQUE
-        perdido = sin_ver > T_PERDIDO_S
+        perdido = (time.time() - self._t_ok) > T_PERDIDO_S
         en_banda = visible and T_LEJOS <= self._tam_ult <= T_CERCA
 
         recompensa = self._recompensa(
