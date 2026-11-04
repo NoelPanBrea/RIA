@@ -11,6 +11,7 @@ Practica 1 - Entrenar y probar el seguimiento del guia.
 
 import argparse
 import os
+import pickle
 import time
 import neat
 
@@ -96,9 +97,24 @@ def modo_aleatorio(args):
 def modo_entrenar(args):
     env = crear_env(args)
     env = RegistroPasos(env, "p2_seguir_logs_test/pasos.csv")
+
+    def evaluar_genomas(genomes, config):
+
+        for i, g in genomes:
+            net = neat.nn.FeedForwardNetwork.create(g, config)
+            g.fitness = 0
+            obs, _ = env.reset()
+            terminado, truncado = False, False
+            while not (terminado or truncado):
+                accion = net.activate(obs)
+                obs, r, terminado, truncado, info = env.step(accion)
+                g.fitness += r
+
     try:
         pop = construir_algoritmo()
         winner = pop.run(evaluar_genomas, args.episodios)
+        with open(args.ruta_modelo + '_neat.pkl', 'wb') as f:
+            pickle.dump(winner, f)
     finally:
         env.close()
 
@@ -106,36 +122,25 @@ def modo_entrenar(args):
 def modo_evaluar(args):
     env = crear_env(args)
 
-    def evaluar_genomas(genomes, config):
-
-        nets = []
-
-        for i, g in genomes:
-            net = neat.nn.FeedForwardNetwork.create(g, config)
-            nets.append(net)
-            g.fitness = 0
-            terminado, truncado = False, False
-            _, _, terminado, truncado, info = env.step
-            while not (terminado or truncado):
-                accion = net.activate(info[""])
-    
-
     try:
-        ruta = args.ruta_modelo + '_' + args.algoritmo
-        if not os.path.exists(ruta + '.zip'):
+        ruta = args.ruta_modelo + '_neat.pkl'
+        if not os.path.exists(ruta):
             raise SystemExit(
-                'No existe {}.zip. Hay que entrenar primero.'.format(ruta))
+                'No existe {}. Hay que entrenar primero.'.format(ruta))
 
-        modelo = cargar_algoritmo(args.algoritmo, ruta, env)
+        config = neat.config.Config(neat.DefaultGenome,
+                                    neat.DefaultReproduction,
+                                    neat.DefaultSpeciesSet,
+                                    neat.DefaultStagnation,
+                                    RUTA_CONFIG)
+        with open(ruta, 'rb') as f:
+            winner = pickle.load(f)
+        net = neat.nn.FeedForwardNetwork.create(winner, config)
 
-        # determinístico=True toma la acción de mayor probabilidad en
-        # lugar de muestrear de la distribución. Durante el
-        # entrenamiento se muestrea (hace falta explorar); al evaluar,
-        # no.
         resumen(env,
-                politica=lambda obs: modelo.predict(obs, deterministic=True)[0],
+                politica=lambda obs: net.activate(obs),
                 episodios=args.episodios,
-                titulo='POLÍTICA APRENDIDA ({})'.format(args.algoritmo.upper()))
+                titulo='POLÍTICA APRENDIDA (NEAT)')
     finally:
         env.close()
 
