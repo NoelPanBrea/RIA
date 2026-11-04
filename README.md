@@ -1,11 +1,11 @@
 ##### RIA
 
 #### Comandos para todo:
-python p1_seguir_entrenar.py --calibrar
-python p1_seguir_entrenar.py --comprobar
-python p1_seguir_entrenar.py --aleatorio --episodios 5
-python p1_seguir_entrenar.py --entrenar --algoritmo sac --pasos 10000
-python p1_seguir_entrenar.py --evaluar --episodios 5
+python3 p2_seguir_entrenar.py --calibrar
+python3 p2_seguir_entrenar.py --comprobar
+python3 p2_seguir_entrenar.py --aleatorio --episodios 5
+python3 p2_seguir_entrenar.py --entrenar --algoritmo sac --pasos 10000
+python3 p2_seguir_entrenar.py --evaluar --episodios 5
 
 ### Cargar el contenedor desde (cmd):
 cd ..\..\..

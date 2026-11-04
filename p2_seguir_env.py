@@ -68,6 +68,8 @@ W_MAX = 0.5    # Giro
 TILT_ANGULO = 110.0      # grados
 TILT_VELOCIDAD = 15.0
 ESPERA_INICIO_S = 2.0   # espera al empezar cada episodio
+AVANCE_INICIO_S = 1.53 
+AVANCE_INICIO_V = V_MAX * 0.5
 
 
 # ---------- Resto de constantes ----------
@@ -320,6 +322,17 @@ class RoboboSeguirEnv(gym.Env):
             self._publicar_velocidad(0.0, 0.0)
             time.sleep(0.05)
 
+    def _avanzar(self, v, duracion):
+        """Avanza en linea recta durante `duracion` segundos y se para."""
+        if v <= 0.0 or duracion <= 0.0:
+            return
+        t0 = time.time()
+        while time.time() - t0 < duracion:
+            # se reenvia el comando por si el puente lo descarta
+            self._publicar_velocidad(v, 0.0)
+            time.sleep(0.05)
+        self._detener()
+
     def _reiniciar_escena(self):
         futuro = self.cli_reset.call_async(ResetSimulation.Request())
         rclpy.spin_until_future_complete(self.nodo, futuro, timeout_sec=5.0)
@@ -391,6 +404,7 @@ class RoboboSeguirEnv(gym.Env):
         
         mover_tilt(self.nodo)
         time.sleep(ESPERA_INICIO_S)
+        self._avanzar(AVANCE_INICIO_V, AVANCE_INICIO_S)
         self.pasos = 0
         self.ultima_accion = np.array([-1.0, 0.0], dtype=np.float32)  # parado
         self._x_ult = 0.0
