@@ -19,7 +19,7 @@ CAR_SIZE_Y = 20
 BORDER_COLOR = (255, 255, 255, 255) # Color To Crash on Hit
 NO_VISON_COLOR = (0, 255, 255, 255)
 
-current_generation = 0 # Generation counter
+current_generation = 0 
 
 class Car:
 

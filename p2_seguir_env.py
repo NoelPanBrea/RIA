@@ -62,8 +62,8 @@ IR_FRONTALES = [0, 1, 2, 3, 4]
 IR_SATURACION = 1000.0
 P_CHOQUE = 0.85
 
-V_MAX = 0.20   # velocidad linea recta
-W_MAX = 0.5    # Giro
+V_MAX = 0.1   # velocidad linea recta
+W_MAX = 0.3    # Giro
 
 TILT_ANGULO = 110.0      # grados
 TILT_VELOCIDAD = 15.0
