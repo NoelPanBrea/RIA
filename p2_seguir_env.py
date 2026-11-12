@@ -68,6 +68,7 @@ W_MAX = 0.3    # Giro
 TILT_ANGULO = 110.0      # grados
 TILT_VELOCIDAD = 15.0
 ESPERA_INICIO_S = 2.0   # espera al empezar cada episodio
+AVANCE_INICIAL_S = 0.8  # en el simulador, avance recto al empezar (0 = no)
 
 
 # ---------- Resto de constantes ----------
@@ -89,6 +90,7 @@ K_SEP = 1.20
 K_CENTRO = 0.5
 K_NO_VER = 0.5
 K_GIRO = 0.1
+K_CAMBIO_GIRO = 0.3   # castigo por cambiar el giro de un paso al siguiente
 R_CHOQUE = 10.0
 R_PERDIDO = 10.0
 
@@ -391,6 +393,14 @@ class RoboboSeguirEnv(gym.Env):
         
         mover_tilt(self.nodo)
         time.sleep(ESPERA_INICIO_S)
+
+        if self.cli_reset is not None:
+            # avance recto inicial, solo en el simulador
+            t0 = time.time()
+            while time.time() - t0 < AVANCE_INICIAL_S:
+                self._publicar_velocidad(V_MAX, 0.0)
+                time.sleep(0.1)
+
         self.pasos = 0
         self.ultima_accion = np.array([-1.0, 0.0], dtype=np.float32)  # parado
         self._x_ult = 0.0
@@ -416,6 +426,7 @@ class RoboboSeguirEnv(gym.Env):
         self._esperar_blob_nuevo()
 
         self.pasos += 1
+        cambio_giro = abs(float(accion[1]) - float(self.ultima_accion[1]))
         self.ultima_accion = accion
         visible, sin_ver, prox = self._percibir()
 
@@ -426,6 +437,7 @@ class RoboboSeguirEnv(gym.Env):
         recompensa = self._recompensa(
             visible, self._x_ult, self._tam_ult, float(accion[1]),
             choque, perdido)
+        recompensa -= K_CAMBIO_GIRO * cambio_giro   # zigzag
 
         terminated = bool(choque or perdido)
         truncated = bool(self.pasos >= self.pasos_max)

@@ -81,6 +81,7 @@ K_SEP = 1.20
 K_CENTRO = 0.5
 K_NO_VER = 0.5
 K_GIRO = 0.1
+K_CAMBIO_GIRO = 0.3   # castigo por cambiar el giro de un paso al siguiente
 R_CHOQUE = 10.0
 R_PERDIDO = 10.0
 
@@ -403,6 +404,7 @@ class SimSeguir:
         self.t += DT
 
         self.pasos += 1
+        cambio_giro = abs(a1 - self.ultima_accion[1])
         self.ultima_accion = [a0, a1]
         visible, sin_ver, prox = self._percibir()
 
@@ -412,6 +414,7 @@ class SimSeguir:
 
         r = self._recompensa(visible, self._x_ult, self._tam_ult, a1,
                              choque, perdido)
+        r -= K_CAMBIO_GIRO * cambio_giro   # zigzag
         terminated = bool(choque or perdido)
         truncated = bool(self.pasos >= self.pasos_max)
         self.info = {'visible': visible, 'en_banda': en_banda,

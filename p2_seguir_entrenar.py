@@ -9,6 +9,11 @@ Practica 1 - Entrenar y probar el seguimiento del guia con NEAT.
     python3 p2_seguir_entrenar.py --evaluar --episodios 5
     python3 p2_seguir_entrenar.py --evaluar --modelo mejor_genoma.pkl
 
+Ajuste fino de un genoma ya entrenado (por ejemplo en pygame):
+    python3 p2_seguir_entrenar.py --entrenar --desde mejor_genoma.pkl \
+        --modelo mejor_genoma_ft.pkl --poblacion 8 --generaciones 4 \
+        --episodios-fit 2
+
 --evaluar carga un genoma NEAT guardado en un .pkl, tanto el generado por
 el simulador de pygame (sim_seguir_neat.py) como el de --entrenar.
 IMPORTANTE: el config.txt debe ser el mismo con el que se entreno
@@ -16,6 +21,8 @@ IMPORTANTE: el config.txt debe ser el mismo con el que se entreno
 """
 
 import argparse
+import copy
+import itertools
 import os
 import pickle
 import time
@@ -51,6 +58,36 @@ def construir_poblacion(config):
     population.add_reporter(neat.StdOutReporter(True))
     population.add_reporter(neat.StatisticsReporter())
     return population
+
+
+def poblacion_desde_genoma(config, semilla):
+    """Poblacion inicial para el ajuste fino: una copia exacta del genoma
+    de partida y el resto copias con una mutacion."""
+    population = construir_poblacion(config)
+    gc = config.genome_config
+    # los nodos nuevos no deben repetir claves de los nodos de la semilla
+    gc.node_indexer = itertools.count(max(list(semilla.nodes) + [0]) + 1)
+    for i, clave in enumerate(list(population.population)):
+        g = copy.deepcopy(semilla)
+        g.key = clave
+        g.fitness = None
+        if i > 0:
+            g.mutate(gc)
+        population.population[clave] = g
+    population.species.speciate(config, population.population,
+                                population.generation)
+    return population
+
+
+def jugar_episodio(env, politica):
+    """Juega un episodio y devuelve la recompensa total."""
+    obs, _ = env.reset()
+    total = 0.0
+    terminado = truncado = False
+    while not (terminado or truncado):
+        obs, r, terminado, truncado, _ = env.step(politica(obs))
+        total += r
+    return total
 
 
 def guardar_genoma(genoma, ruta):
@@ -117,30 +154,58 @@ def modo_aleatorio(args):
 
 def modo_entrenar(args):
     """Entrena con NEAT directamente sobre el entorno (simulador Robobo
-    o robot real). Cada genoma juega un episodio."""
+    o robot real). Cada genoma juega --episodios-fit episodios.
+
+    Con --desde es un ajuste fino: se parte de un genoma ya entrenado y al
+    final se compara con el y se guarda el mejor de los dos."""
+    config = cargar_config(args.config)
+    if args.poblacion:
+        config.pop_size = args.poblacion
+    semilla = None
+    if args.desde:
+        if os.path.abspath(args.desde) == os.path.abspath(args.modelo):
+            raise SystemExit('--desde y --modelo no pueden ser el mismo '
+                             'fichero.')
+        semilla = cargar_genoma(args.desde)
+
     os.makedirs(RUTA_LOGS, exist_ok=True)
     env = crear_env(args)
     env = RegistroPasos(env, os.path.join(RUTA_LOGS, 'pasos.csv'))
-    config = cargar_config(args.config)
     estado = {'mejor_fit': -1e18}
 
     def evaluar_genomas(genomes, cfg):
         for _, g in genomes:
             politica = crear_politica(g, cfg)
-            obs, _ = env.reset()
-            total = 0.0
-            terminado = truncado = False
-            while not (terminado or truncado):
-                obs, r, terminado, truncado, _ = env.step(politica(obs))
-                total += r
+            # media de varios episodios para que no gane el que tiene suerte
+            total = float(np.mean([jugar_episodio(env, politica)
+                                   for _ in range(args.episodios_fit)]))
             g.fitness = total
             if total > estado['mejor_fit']:
                 estado['mejor_fit'] = total
                 guardar_genoma(g, args.modelo)   # guarda el mejor hasta ahora
 
     try:
-        population = construir_poblacion(config)
+        if semilla is not None:
+            population = poblacion_desde_genoma(config, semilla)
+        else:
+            population = construir_poblacion(config)
         winner = population.run(evaluar_genomas, args.generaciones)
+
+        if semilla is not None and args.validar > 0:
+            # original contra ajustado, alternados, con episodios nuevos
+            pol_orig = crear_politica(semilla, config)
+            pol_nuevo = crear_politica(winner, config)
+            r_orig, r_nuevo = [], []
+            for _ in range(args.validar):
+                r_orig.append(jugar_episodio(env, pol_orig))
+                r_nuevo.append(jugar_episodio(env, pol_nuevo))
+            print('\nValidacion ({} episodios cada uno): original {:.2f}   '
+                  'ajustado {:.2f}'.format(args.validar, np.mean(r_orig),
+                                           np.mean(r_nuevo)))
+            if np.mean(r_nuevo) <= np.mean(r_orig):
+                print('El ajuste fino no mejora: se guarda el original.')
+                winner = semilla
+
         guardar_genoma(winner, args.modelo)
         print('\nGenoma guardado en', args.modelo)
     finally:
@@ -263,6 +328,16 @@ def main():
 
     p.add_argument('--generaciones', type=int, default=20,
                    help='generaciones de NEAT al entrenar')
+    p.add_argument('--desde', default=None,
+                   help='genoma .pkl del que partir al entrenar (ajuste fino)')
+    p.add_argument('--poblacion', type=int, default=None,
+                   help='tamano de la poblacion al entrenar (por defecto, '
+                        'el pop_size del config.txt)')
+    p.add_argument('--episodios-fit', type=int, default=1,
+                   help='episodios por genoma al entrenar (se promedia)')
+    p.add_argument('--validar', type=int, default=3,
+                   help='con --desde: episodios para comparar al final el '
+                        'genoma ajustado con el original (0 = no comparar)')
     p.add_argument('--episodios', type=int, default=5,
                    help='episodios al evaluar / aleatorio')
     p.add_argument('--pasos-max', type=int, default=400,
