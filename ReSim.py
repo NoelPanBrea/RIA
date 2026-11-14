@@ -47,12 +47,12 @@ IR_ANGULOS = [math.radians(a) for a in (-60, -30, 0, 30, 60)]
 IR_ALCANCE_PX = 25.0
 
 # Ruido de percepcion
-RUIDO_X = 0.1
+RUIDO_X = 0.02
 RUIDO_TAM = 0.03
 
 # Guia
 V_GUIA_MIN = 0.06   # m/s
-V_GUIA_MAX = 0.09   # m/s
+V_GUIA_MAX = 0.16   # m/s
 ACEL_GUIA = 0.20    # m/s^2
 PROB_PARADA = 0
 
@@ -60,11 +60,11 @@ PROB_PARADA = 0
 # (izquierda, derecha, arriba, abajo, radio de esquina) en pixeles.
 # Se comprueba con:  --pista
 LIMITES = (25, 417, 22, 479)
-RADIO_ESQUINA = 48
+RADIO_ESQUINA = 60
 
 # ---- constantes de p2_seguir_env.py ----
-V_MAX = 0.1
-W_MAX = 0.3
+V_MAX = 0.2
+W_MAX = 0.5
 P_CHOQUE = 0.85
 T_PERDIDO_S = 3.0
 
@@ -81,7 +81,7 @@ K_SEP = 1.20
 K_CENTRO = 0.5
 K_NO_VER = 0.5
 K_GIRO = 0.1
-K_CAMBIO_GIRO = 0.3   # castigo por cambiar el giro de un paso al siguiente
+K_CAMBIO_GIRO = 0   # castigo por cambiar el giro de un paso al siguiente
 R_CHOQUE = 10.0
 R_PERDIDO = 10.0
 
@@ -448,7 +448,7 @@ class Visor:
 
     def _robot(self, x, y, theta, color):
         if self.sprite is not None:
-            rot = pygame.transform.rotate(self.sprite, -math.degrees(theta))
+            rot = pygame.transform.rotate(self.sprite, -math.degrees(theta) + 180)
             self.pantalla.blit(rot, rot.get_rect(center=(x, y)))
         else:
             pygame.draw.circle(self.pantalla, (120, 120, 120), (x, y),
