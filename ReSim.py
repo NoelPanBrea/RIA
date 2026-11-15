@@ -19,16 +19,16 @@ import os
 import pickle
 import random
 from bisect import bisect_right
+from p2_resimreporter import RegistroGeneracion, CONTADOR
 
 import neat
 import pygame
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-
+RUTA_LOGS = "ReSimLogsP2"
 # =========================
 # Parametros del simulador 
 # =========================
-
 WIDTH, HEIGHT = 449, 503
 PX_POR_M = 167.0         # escala: 20 px (robot) = 0.12 m
 RADIO_ROBOT = 10.0       # px
@@ -510,6 +510,8 @@ def jugar_episodio(sim, net, seed, visor=None, texto=''):
     while True:
         accion = net.activate(obs)          # tanh -> [-1, 1]
         obs, r, term, trunc, info = sim.step(accion)
+        CONTADOR["pasos"] += 1
+
         total += r
         if visor is not None and not visor.dibujar(sim, texto):
             return None, info
@@ -556,6 +558,7 @@ def modo_entrenar(args, pista):
             net = neat.nn.FeedForwardNetwork.create(g, cfg)
             tot = [jugar_episodio(sim, net, s)[0] for s in seeds]
             g.fitness = sum(tot) / len(tot)
+            CONTADOR["evaluaciones"] += 1
             if mejor_gen is None or g.fitness > mejor_gen.fitness:
                 mejor_gen = g
         if mejor_gen.fitness > estado['mejor_fit']:
@@ -573,6 +576,8 @@ def modo_entrenar(args, pista):
                                                        mejor_gen.fitness))
 
     pop = neat.Population(config)
+    pop.add_reporter(RegistroGeneracion(os.path.join(RUTA_LOGS, 'generaciones.csv'),
+        os.path.join(RUTA_LOGS, f'genomas_{args.modelo}')))
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.StatisticsReporter())
     winner = pop.run(evaluar, args.generaciones)

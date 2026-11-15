@@ -1,6 +1,6 @@
 import csv
-import gymnasium as gym
 import numpy as np
+import gymnasium as gym
 
 class RegistroPasos(gym.Wrapper):
     """Escribe una fila por cada step() en un csv."""
@@ -36,3 +36,4 @@ class RegistroPasos(gym.Wrapper):
     def close(self):
         self._f.close()
         super().close()
+

@@ -26,6 +26,7 @@ import itertools
 import os
 import pickle
 import time
+import math
 
 import neat
 import numpy as np
@@ -236,6 +237,9 @@ def resumen(env, politica, episodios, titulo):
     longitudes = []
     frac_visible = []
     frac_banda = []
+    frac_grad = []
+    grad = []
+    sep = []
     choques = 0
     perdidos = 0
     t_total = 0.0
@@ -248,7 +252,10 @@ def resumen(env, politica, episodios, titulo):
         total = 0.0
         pasos = 0
         n_visible = 0
+        sep_cnt = 0
         n_banda = 0
+        n_grad = 0
+        grad_cnt = 0
         info = {}
         terminado = False
         truncado = False
@@ -260,16 +267,24 @@ def resumen(env, politica, episodios, titulo):
             else:
                 accion = politica(obs)
             obs, r, terminado, truncado, info = env.step(accion)
+            angle = abs(math.degrees(math.atan(info['x'] * math.tan(math.radians(60) / 2))))
             total += r
             pasos += 1
+            n_grad += 1 if angle < 15 else 0
+            grad_cnt += angle
             n_visible += int(info['visible'])
             n_banda += int(info['en_banda'])
+            sep_cnt += info['tam'] 
 
         t_total += time.time() - t0
         recompensas.append(total)
         longitudes.append(pasos)
         frac_visible.append(100.0 * n_visible / pasos)
         frac_banda.append(100.0 * n_banda / pasos)
+        frac_grad.append(100 * n_grad / pasos)
+        grad.append(grad_cnt / pasos)
+        sep.append(sep_cnt / pasos)
+
 
         if info.get('choque'):
             choques += 1
@@ -281,9 +296,10 @@ def resumen(env, politica, episodios, titulo):
             desenlace = 'tiempo agotado'
 
         print('episodio {:2d}   pasos {:3d}   recompensa {:8.2f}   '
-              've la pelota {:5.1f} %   en banda {:5.1f} %   {}'
+              've la pelota {:5.1f} %   en banda {:5.1f} % separación media {:8.2f} '
+              'en ángulo {:5.1f} % ángulo medio {:8.2f}    {}'
               .format(ep + 1, pasos, total, frac_visible[-1],
-                      frac_banda[-1], desenlace))
+                      frac_banda[-1], sep[-1], frac_grad[-1], grad[-1], desenlace))
 
     completos = episodios - choques - perdidos
     print('\nrecompensa media   {:.2f}  (desviacion {:.2f})'
@@ -294,6 +310,12 @@ def resumen(env, politica, episodios, titulo):
           .format(float(np.mean(frac_visible))))
     print('en banda           {:.1f} % de los pasos'
           .format(float(np.mean(frac_banda))))
+    print('separación media           {:.1f}'
+          .format(float(np.mean(sep))))
+    print('en angulo           {:.1f} % de los pasos'
+          .format(float(np.mean(frac_grad))))
+    print('ángulo medio           {:.1f}'
+          .format(float(np.mean(grad))))
     print('sin fallo          {}/{}'.format(completos, episodios))
     print('choques            {}/{}'.format(choques, episodios))
     print('guia perdido       {}/{}'.format(perdidos, episodios))
@@ -312,7 +334,7 @@ def crear_env(args):
 
 def main():
     p = argparse.ArgumentParser(
-        description='Practica 1 de RIA: seguimiento del robot guia (NEAT)')
+        description='Practica 2 de RIA: seguimiento del robot guia (NEAT)')
 
     modo = p.add_mutually_exclusive_group(required=True)
     modo.add_argument('--calibrar', action='store_true',
