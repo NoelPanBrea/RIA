@@ -199,7 +199,6 @@ def fig_calidad(semillas, args, ref, num):
            'la desviacion tipica de la poblacion dentro de cada generacion (promediada entre '
            'semillas). {}.'
            .format(num, rango_texto(args), texto_banda(args.banda), datos_pie(semillas)))
-    poner_pie(fig, pie)
     guardar(fig, args.salida, 'fig1_calidad')
 
 
@@ -236,7 +235,6 @@ def fig_especies(semillas, args, num):
            'cada color es una especie y su altura es el numero de individuos que la '
            'forman). Una fila por semilla. {}.'
            .format(num, datos_pie(semillas)))
-    poner_pie(fig, pie)
     guardar(fig, args.salida, 'fig2_especies')
 
 
@@ -258,7 +256,6 @@ def fig_complejidad(semillas, args, num):
     pie = ('Figura {}. Complejidad del mejor individuo de cada generacion (nodos, incluidos '
            'entradas y salidas, y conexiones activas). La banda es el {}. {}.'
            .format(num, texto_banda(args.banda), datos_pie(semillas)))
-    poner_pie(fig, pie)
     guardar(fig, args.salida, 'fig3_complejidad')
 
 

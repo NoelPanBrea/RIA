@@ -1,0 +1,99 @@
+GENOMA NEAT (ModeloDeFinitivo.pkl)
+----------------------------------
+episodio  1   pasos 800   recompensa  1300.11   ve la pelota 100.0 %   en banda  99.6 % separación media     0.45 en ángulo 100.0 % ángulo medio     2.53    tiempo agotado
+episodio  2   pasos 800   recompensa  1301.01   ve la pelota 100.0 %   en banda  99.5 % separación media     0.45 en ángulo 100.0 % ángulo medio     2.52    tiempo agotado
+episodio  3   pasos 800   recompensa  1299.37   ve la pelota 100.0 %   en banda 100.0 % separación media     0.45 en ángulo 100.0 % ángulo medio     2.58    tiempo agotado
+
+recompensa media   1300.16  (desviacion 0.67)
+longitud media     800.0 pasos
+duracion del paso  0.20 s
+ve la pelota       100.0 % de los pasos
+en banda           99.7 % de los pasos
+separación media           0.5
+en angulo           100.0 % de los pasos
+ángulo medio           2.5
+sin fallo          3/3
+choques            0/3
+guia perdido       0/3
+root@pc-robobo:/docker-ros/ws/RIA# python p2_seguir_entrenar.py --evaluar --episodios 3 --modelo ReSimLogsP2/semilla_2/ModeloDeFinitivo.pkl --
+pasos-max 600
+AVISO: faltan por calibrar las constantes de calibracion (CALIBRADO = False).
+
+GENOMA NEAT (ModeloDeFinitivo.pkl)
+----------------------------------
+episodio  1   pasos 600   recompensa   962.07   ve la pelota 100.0 %   en banda  90.0 % separación media     0.44 en ángulo 100.0 % ángulo medio     2.81    tiempo agotado
+episodio  2   pasos 600   recompensa   963.07   ve la pelota 100.0 %   en banda  89.2 % separación media     0.44 en ángulo 100.0 % ángulo medio     2.70    tiempo agotado
+episodio  3   pasos 600   recompensa   959.11   ve la pelota 100.0 %   en banda  84.8 % separación media     0.44 en ángulo 100.0 % ángulo medio     2.69    tiempo agotado
+
+recompensa media   961.42  (desviacion 1.68)
+longitud media     600.0 pasos
+duracion del paso  0.20 s
+ve la pelota       100.0 % de los pasos
+en banda           88.0 % de los pasos
+separación media           0.4
+en angulo           100.0 % de los pasos
+ángulo medio           2.7
+sin fallo          3/3
+choques            0/3
+guia perdido       0/3
+root@pc-robobo:/docker-ros/ws/RIA# python p2_seguir_entrenar.py --evaluar --episodios 3 --modelo ReSimLogsP2/semilla_2/ModeloDeFinitivo.pkl --pasos-max 600
+AVISO: faltan por calibrar las constantes de calibracion (CALIBRADO = False).
+
+GENOMA NEAT (ModeloDeFinitivo.pkl)
+----------------------------------
+episodio  1   pasos 600   recompensa   955.56   ve la pelota 100.0 %   en banda  89.3 % separación media     0.47 en ángulo 100.0 % ángulo medio     2.59    tiempo agotado
+episodio  2   pasos 600   recompensa   902.34   ve la pelota 100.0 %   en banda  65.7 % separación media     0.43 en ángulo  99.5 % ángulo medio     2.85    tiempo agotado
+episodio  3   pasos 600   recompensa   899.37   ve la pelota 100.0 %   en banda  75.8 % separación media     0.44 en ángulo  99.8 % ángulo medio     2.76    tiempo agotado
+
+recompensa media   919.09  (desviacion 25.82)
+longitud media     600.0 pasos
+duracion del paso  0.20 s
+ve la pelota       100.0 % de los pasos
+en banda           76.9 % de los pasos
+separación media           0.4
+en angulo           99.8 % de los pasos
+ángulo medio           2.7
+sin fallo          3/3
+choques            0/3
+guia perdido       0/3
+root@pc-robobo:/docker-ros/ws/RIA# python p2_seguir_entrenar.py --evaluar --episodios 3 --modelo ReSimLogsP2/semilla_2/ModeloDeFinitivo.pkl --pasos-max 600
+AVISO: faltan por calibrar las constantes de calibracion (CALIBRADO = False).
+
+GENOMA NEAT (ModeloDeFinitivo.pkl)
+----------------------------------
+episodio  1   pasos 600   recompensa   739.18   ve la pelota 100.0 %   en banda  51.3 % separación media     0.41 en ángulo  99.0 % ángulo medio     2.98    tiempo agotado
+episodio  2   pasos 600   recompensa   843.82   ve la pelota 100.0 %   en banda  69.5 % separación media     0.47 en ángulo 100.0 % ángulo medio     2.84    tiempo agotado
+episodio  3   pasos 600   recompensa   887.43   ve la pelota 100.0 %   en banda  77.8 % separación media     0.48 en ángulo  99.0 % ángulo medio     3.00    tiempo agotado
+
+recompensa media   823.47  (desviacion 62.21)
+longitud media     600.0 pasos
+duracion del paso  0.20 s
+ve la pelota       100.0 % de los pasos
+en banda           66.2 % de los pasos
+separación media           0.5
+en angulo           99.3 % de los pasos
+ángulo medio           2.9
+sin fallo          3/3
+choques            0/3
+guia perdido       0/3
+root@pc-robobo:/docker-ros/ws/RIA# python p2_seguir_entrenar.py --evaluar --episodios 3 --modelo ReSimLogsP2/semilla_2/ModeloDeFinitivo.pkl --pasos-max 600
+AVISO: faltan por calibrar las constantes de calibracion (CALIBRADO = False).
+
+GENOMA NEAT (ModeloDeFinitivo.pkl)
+----------------------------------
+episodio  1   pasos 600   recompensa   867.65   ve la pelota 100.0 %   en banda  69.3 % separación media     0.46 en ángulo  99.7 % ángulo medio     2.63    tiempo agotado
+episodio  2   pasos 600   recompensa   819.80   ve la pelota 100.0 %   en banda  66.5 % separación media     0.43 en ángulo 100.0 % ángulo medio     3.03    tiempo agotado
+episodio  3   pasos 600   recompensa   860.04   ve la pelota 100.0 %   en banda  68.0 % separación media     0.45 en ángulo  99.5 % ángulo medio     3.04    tiempo agotado
+
+recompensa media   849.16  (desviacion 21.00)
+longitud media     600.0 pasos
+duracion del paso  0.20 s
+ve la pelota       100.0 % de los pasos
+en banda           67.9 % de los pasos
+separación media           0.4
+en angulo           99.7 % de los pasos
+ángulo medio           2.9
+sin fallo          3/3
+choques            0/3
+guia perdido       0/3
+root@pc-robobo:/docker-ros/ws/RIA# 

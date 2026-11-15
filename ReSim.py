@@ -47,7 +47,7 @@ IR_ANGULOS = [math.radians(a) for a in (-60, -30, 0, 30, 60)]
 IR_ALCANCE_PX = 25.0
 
 # Ruido de percepcion
-RUIDO_X = 0.02
+RUIDO_X = 0.1
 RUIDO_TAM = 0.03
 
 # Guia
@@ -81,7 +81,6 @@ K_SEP = 1.20
 K_CENTRO = 0.5
 K_NO_VER = 0.5
 K_GIRO = 0.1
-K_CAMBIO_GIRO = 0   # castigo por cambiar el giro de un paso al siguiente
 R_CHOQUE = 10.0
 R_PERDIDO = 10.0
 
@@ -397,14 +396,11 @@ class SimSeguir:
             gx, gy = self.guia.pos
             if math.hypot(gx - self.x, gy - self.y) < 2 * RADIO_ROBOT:
                 colision = True
-            if not self.pista.en_carretera(self.x, self.y):
-                colision = True
             if colision:
                 break
         self.t += DT
 
         self.pasos += 1
-        cambio_giro = abs(a1 - self.ultima_accion[1])
         self.ultima_accion = [a0, a1]
         visible, sin_ver, prox = self._percibir()
 
@@ -414,7 +410,6 @@ class SimSeguir:
 
         r = self._recompensa(visible, self._x_ult, self._tam_ult, a1,
                              choque, perdido)
-        r -= K_CAMBIO_GIRO * cambio_giro   # zigzag
         terminated = bool(choque or perdido)
         truncated = bool(self.pasos >= self.pasos_max)
         self.info = {'visible': visible, 'en_banda': en_banda,
